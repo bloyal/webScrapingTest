@@ -19,6 +19,10 @@ getMenuItems <- function(){
   #Save titles and descriptions to data frame
   ckf_items <- data.frame(name=menu_titles, description=menu_descriptions);
   
+  #Remove apostrophes from title and descriptions (messes up indexing)
+  ckf_items$name<-str_replace_all(ckf_items$name,"'","");
+  ckf_items$description<-str_replace_all(ckf_items$description,"'","");
+  
   #Remove whitespace from descriptions
   ckf_items$description<-str_replace_all(ckf_items$description,"[\t\r\n]","");
   

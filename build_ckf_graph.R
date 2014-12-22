@@ -5,13 +5,19 @@ graph = startGraph("http://localhost:7474/db/data/");
 graph$version;
 # [1] "2.1.6"
 
-bulkCreateNodes<-function(graph, labelName, indexName, indexValueVector){
-  query <- paste("CREATE (n:",labelName," {",c,":{indexValue}})", sep="");
+#bulkCreateNodes(graph, "MenuItem","name",menu$name)
+
+#bulkUpdateNodeProperties(graph, rep("MenuItem",323), 
+#                         rep("name",323), menu$name, 
+#                         rep("description",323), menu$description)
+
+bulkCreateNodes<-function(graph, labelName, indexName, indexValues){
+  query <- paste("CREATE (n:",labelName," {",indexName,":{indexValue}})", sep="");
   t <- newTransaction(graph);
   
-  for (i in 1:length(indexValueVector)){
-    value <- indexValueVector[i];
-    appendCypher(t, query, indexValue = value);
+  for (i in 1:length(indexValues)){
+   value <- indexValues[i];
+   appendCypher(t, query, indexValue = value);
   }
   
   commit(t);
@@ -19,18 +25,18 @@ bulkCreateNodes<-function(graph, labelName, indexName, indexValueVector){
   addIndex(graph, labelName, indexName);
 }
 
-bulkAddNodeProperties<-function(graph, NodeInfo){
-  indexName <- colnames(NodeInfo)[1];
-  indexValues <- NodeInfo[,1];
-  Properties <- NodeInfo[,-1];
-  query <- paste("
-                 MERGE (n {",indexName,":{indexValue}})
-                 SET n.{propertyName}="
-                 ,""
-                 )
-                
+bulkUpdateNodeProperties<-function(graph, labelNames, indexNames, indexValues, propertyNames, propertyValues){
+  nodeInfo <- cbind(labelName=labelNames, indexName=indexNames, 
+                    indexValue=as.character(indexValues), 
+                    propertyName=propertyNames, 
+                    propertyValue=propertyValues);
+  t <- newTransaction(graph);
   
-  for (i in 1:length(indexValues)){
-    
+  for (i in 1:nrow(nodeInfo)){
+    query <- paste("MERGE (n:", nodeInfo[i,"labelName"]," {", nodeInfo[i,"indexName"], ":'", nodeInfo[i,"indexValue"], "'}) ",
+                   "SET n.",nodeInfo[i,"propertyName"],"='",nodeInfo[i,"propertyValue"], "'", sep="");
+    appendCypher(t, query);
   }
+
+  commit(t);
 }
