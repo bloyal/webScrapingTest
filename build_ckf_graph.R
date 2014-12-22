@@ -6,10 +6,17 @@ graph$version;
 # [1] "2.1.6"
 
 #bulkCreateNodes(graph, "MenuItem","name",menu$name)
+#bulkCreateNodes(graph, "Feature","name",unique(unlist(features)))
 
 #bulkUpdateNodeProperties(graph, rep("MenuItem",323), 
 #                         rep("name",323), menu$name, 
 #                         rep("description",323), menu$description)
+
+# bulkCreateRelationships(graph, 
+#                         rep("MenuItem",5), rep("name",5), menu$name[1:5],
+#                         rep("Feature",5), rep("name",5), unique(unlist(features))[1:5],
+#                         rep("HAS_FEATURE",5)
+# )
 
 bulkCreateNodes<-function(graph, labelName, indexName, indexValues){
   query <- paste("CREATE (n:",labelName," {",indexName,":{indexValue}})", sep="");
@@ -42,11 +49,11 @@ bulkUpdateNodeProperties<-function(graph, labelNames, indexNames, indexValues,
   commit(t);
 }
 
-bulkCreateRelationships(graph, 
-                        rep("MenuItem",5), rep("name",5), menu$name[1:5],
-                        rep("Feature",5), rep("name",5), unique(unlist(features))[1:5],
-                        rep("HAS_FEATURE",5)
-                        )
+# bulkCreateRelationships(graph, 
+#                          rep("MenuItem",3184), rep("name",3184), df$menuItems,
+#                          rep("Feature",3184), rep("name",3184), df$features,
+#                          rep("HAS_FEATURE",3184)
+#                          )
 
 bulkCreateRelationships<-function(graph, 
                                   startLabel, startIndexName, startIndexValue, 
@@ -57,10 +64,10 @@ bulkCreateRelationships<-function(graph,
                    relationshipType);
   t <- newTransaction(graph);
   for (i in 1:nrow(relInfo)){
-    query <- paste("MERGE (a:", relInfo[i,"startLabel"]," {", relInfo[i,"startIndexName"], ":'", relInfo[i,"startIndexValue"], "'}) ",
-                   "MERGE (b:", relInfo[i,"endLabel"]," {", relInfo[i,"endIndexName"], ":'", relInfo[i,"endIndexValue"], "'}) ",
+    query <- paste("MATCH (a:", relInfo[i,"startLabel"]," {", relInfo[i,"startIndexName"], ":'", relInfo[i,"startIndexValue"], "'}) ",
+                   "MATCH (b:", relInfo[i,"endLabel"]," {", relInfo[i,"endIndexName"], ":'", relInfo[i,"endIndexValue"], "'}) ",
                    "CREATE (a)-[r:",relInfo[i,"relationshipType"],"]->(b)", sep="");
-    #print(query)
+    if (i==1) {print(query)}
     appendCypher(t, query);
   }
   commit(t);
