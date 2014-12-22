@@ -60,5 +60,6 @@ getFeatures <- function(menu){
   #Stem and Tokenize
   features<-lapply(features,scan_tokenizer);
   features<-lapply(features,unique);
+  names(features)<-as.character(menu[,1]);
   features;
 }
